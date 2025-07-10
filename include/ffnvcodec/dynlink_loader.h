@@ -137,25 +137,38 @@ error:                              \
 #ifdef FFNV_DYNLINK_CUDA_H
 typedef struct CudaFunctions {
     tcuInit *cuInit;
+    tcuDriverGetVersion *cuDriverGetVersion;
     tcuDeviceGetCount *cuDeviceGetCount;
     tcuDeviceGet *cuDeviceGet;
     tcuDeviceGetAttribute *cuDeviceGetAttribute;
     tcuDeviceGetName *cuDeviceGetName;
     tcuDeviceGetUuid *cuDeviceGetUuid;
+    tcuDeviceGetUuid_v2 *cuDeviceGetUuid_v2;
+    tcuDeviceGetLuid *cuDeviceGetLuid;
+    tcuDeviceGetByPCIBusId *cuDeviceGetByPCIBusId;
+    tcuDeviceGetPCIBusId *cuDeviceGetPCIBusId;
     tcuDeviceComputeCapability *cuDeviceComputeCapability;
     tcuCtxCreate_v2 *cuCtxCreate;
+    tcuCtxGetCurrent *cuCtxGetCurrent;
     tcuCtxSetLimit *cuCtxSetLimit;
     tcuCtxPushCurrent_v2 *cuCtxPushCurrent;
     tcuCtxPopCurrent_v2 *cuCtxPopCurrent;
     tcuCtxDestroy_v2 *cuCtxDestroy;
     tcuMemAlloc_v2 *cuMemAlloc;
     tcuMemAllocPitch_v2 *cuMemAllocPitch;
+    tcuMemAllocManaged *cuMemAllocManaged;
     tcuMemsetD8Async *cuMemsetD8Async;
     tcuMemFree_v2 *cuMemFree;
     tcuMemcpy *cuMemcpy;
     tcuMemcpyAsync *cuMemcpyAsync;
     tcuMemcpy2D_v2 *cuMemcpy2D;
     tcuMemcpy2DAsync_v2 *cuMemcpy2DAsync;
+    tcuMemcpyHtoD_v2 *cuMemcpyHtoD;
+    tcuMemcpyHtoDAsync_v2 *cuMemcpyHtoDAsync;
+    tcuMemcpyDtoH_v2 *cuMemcpyDtoH;
+    tcuMemcpyDtoHAsync_v2 *cuMemcpyDtoHAsync;
+    tcuMemcpyDtoD_v2 *cuMemcpyDtoD;
+    tcuMemcpyDtoDAsync_v2 *cuMemcpyDtoDAsync;
     tcuGetErrorName *cuGetErrorName;
     tcuGetErrorString *cuGetErrorString;
     tcuCtxGetDevice *cuCtxGetDevice;
@@ -171,6 +184,7 @@ typedef struct CudaFunctions {
     tcuStreamSynchronize *cuStreamSynchronize;
     tcuStreamDestroy_v2 *cuStreamDestroy;
     tcuStreamAddCallback *cuStreamAddCallback;
+    tcuStreamWaitEvent *cuStreamWaitEvent;
     tcuEventCreate *cuEventCreate;
     tcuEventDestroy_v2 *cuEventDestroy;
     tcuEventSynchronize *cuEventSynchronize;
@@ -195,6 +209,7 @@ typedef struct CudaFunctions {
     tcuGraphicsMapResources *cuGraphicsMapResources;
     tcuGraphicsUnmapResources *cuGraphicsUnmapResources;
     tcuGraphicsSubResourceGetMappedArray *cuGraphicsSubResourceGetMappedArray;
+    tcuGraphicsResourceGetMappedPointer *cuGraphicsResourceGetMappedPointer;
 
     tcuImportExternalMemory *cuImportExternalMemory;
     tcuDestroyExternalMemory *cuDestroyExternalMemory;
@@ -208,6 +223,22 @@ typedef struct CudaFunctions {
     tcuDestroyExternalSemaphore *cuDestroyExternalSemaphore;
     tcuSignalExternalSemaphoresAsync *cuSignalExternalSemaphoresAsync;
     tcuWaitExternalSemaphoresAsync *cuWaitExternalSemaphoresAsync;
+
+    tcuArrayCreate *cuArrayCreate;
+    tcuArray3DCreate *cuArray3DCreate;
+    tcuArrayDestroy *cuArrayDestroy;
+
+    tcuEGLStreamProducerConnect *cuEGLStreamProducerConnect;
+    tcuEGLStreamProducerDisconnect *cuEGLStreamProducerDisconnect;
+    tcuEGLStreamConsumerDisconnect *cuEGLStreamConsumerDisconnect;
+    tcuEGLStreamProducerPresentFrame *cuEGLStreamProducerPresentFrame;
+    tcuEGLStreamProducerReturnFrame *cuEGLStreamProducerReturnFrame;
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+    tcuD3D11GetDevice *cuD3D11GetDevice;
+    tcuD3D11GetDevices *cuD3D11GetDevices;
+    tcuGraphicsD3D11RegisterResource *cuGraphicsD3D11RegisterResource;
+#endif
 
     FFNV_LIB_HANDLE lib;
 } CudaFunctions;
@@ -278,24 +309,33 @@ static inline int cuda_load_functions(CudaFunctions **functions, void *logctx)
     GENERIC_LOAD_FUNC_PREAMBLE(CudaFunctions, cuda, CUDA_LIBNAME);
 
     LOAD_SYMBOL(cuInit, tcuInit, "cuInit");
+    LOAD_SYMBOL(cuDriverGetVersion, tcuDriverGetVersion, "cuDriverGetVersion");
     LOAD_SYMBOL(cuDeviceGetCount, tcuDeviceGetCount, "cuDeviceGetCount");
     LOAD_SYMBOL(cuDeviceGet, tcuDeviceGet, "cuDeviceGet");
     LOAD_SYMBOL(cuDeviceGetAttribute, tcuDeviceGetAttribute, "cuDeviceGetAttribute");
     LOAD_SYMBOL(cuDeviceGetName, tcuDeviceGetName, "cuDeviceGetName");
     LOAD_SYMBOL(cuDeviceComputeCapability, tcuDeviceComputeCapability, "cuDeviceComputeCapability");
     LOAD_SYMBOL(cuCtxCreate, tcuCtxCreate_v2, "cuCtxCreate_v2");
+    LOAD_SYMBOL(cuCtxGetCurrent, tcuCtxGetCurrent, "cuCtxGetCurrent");
     LOAD_SYMBOL(cuCtxSetLimit, tcuCtxSetLimit, "cuCtxSetLimit");
     LOAD_SYMBOL(cuCtxPushCurrent, tcuCtxPushCurrent_v2, "cuCtxPushCurrent_v2");
     LOAD_SYMBOL(cuCtxPopCurrent, tcuCtxPopCurrent_v2, "cuCtxPopCurrent_v2");
     LOAD_SYMBOL(cuCtxDestroy, tcuCtxDestroy_v2, "cuCtxDestroy_v2");
     LOAD_SYMBOL(cuMemAlloc, tcuMemAlloc_v2, "cuMemAlloc_v2");
     LOAD_SYMBOL(cuMemAllocPitch, tcuMemAllocPitch_v2, "cuMemAllocPitch_v2");
+    LOAD_SYMBOL(cuMemAllocManaged, tcuMemAllocManaged, "cuMemAllocManaged");
     LOAD_SYMBOL(cuMemsetD8Async, tcuMemsetD8Async, "cuMemsetD8Async");
     LOAD_SYMBOL(cuMemFree, tcuMemFree_v2, "cuMemFree_v2");
     LOAD_SYMBOL(cuMemcpy, tcuMemcpy, "cuMemcpy");
     LOAD_SYMBOL(cuMemcpyAsync, tcuMemcpyAsync, "cuMemcpyAsync");
     LOAD_SYMBOL(cuMemcpy2D, tcuMemcpy2D_v2, "cuMemcpy2D_v2");
     LOAD_SYMBOL(cuMemcpy2DAsync, tcuMemcpy2DAsync_v2, "cuMemcpy2DAsync_v2");
+    LOAD_SYMBOL(cuMemcpyHtoD, tcuMemcpyHtoD_v2, "cuMemcpyHtoD_v2");
+    LOAD_SYMBOL(cuMemcpyHtoDAsync, tcuMemcpyHtoDAsync_v2, "cuMemcpyHtoDAsync_v2");
+    LOAD_SYMBOL(cuMemcpyDtoH, tcuMemcpyDtoH_v2, "cuMemcpyDtoH_v2");
+    LOAD_SYMBOL(cuMemcpyDtoHAsync, tcuMemcpyDtoHAsync_v2, "cuMemcpyDtoHAsync_v2");
+    LOAD_SYMBOL(cuMemcpyDtoD, tcuMemcpyDtoD_v2, "cuMemcpyDtoD_v2");
+    LOAD_SYMBOL(cuMemcpyDtoDAsync, tcuMemcpyDtoDAsync_v2, "cuMemcpyDtoDAsync_v2");
     LOAD_SYMBOL(cuGetErrorName, tcuGetErrorName, "cuGetErrorName");
     LOAD_SYMBOL(cuGetErrorString, tcuGetErrorString, "cuGetErrorString");
     LOAD_SYMBOL(cuCtxGetDevice, tcuCtxGetDevice, "cuCtxGetDevice");
@@ -311,6 +351,7 @@ static inline int cuda_load_functions(CudaFunctions **functions, void *logctx)
     LOAD_SYMBOL(cuStreamSynchronize, tcuStreamSynchronize, "cuStreamSynchronize");
     LOAD_SYMBOL(cuStreamDestroy, tcuStreamDestroy_v2, "cuStreamDestroy_v2");
     LOAD_SYMBOL(cuStreamAddCallback, tcuStreamAddCallback, "cuStreamAddCallback");
+    LOAD_SYMBOL(cuStreamWaitEvent, tcuStreamWaitEvent, "cuStreamWaitEvent");
     LOAD_SYMBOL(cuEventCreate, tcuEventCreate, "cuEventCreate");
     LOAD_SYMBOL(cuEventDestroy, tcuEventDestroy_v2, "cuEventDestroy_v2");
     LOAD_SYMBOL(cuEventSynchronize, tcuEventSynchronize, "cuEventSynchronize");
@@ -335,8 +376,13 @@ static inline int cuda_load_functions(CudaFunctions **functions, void *logctx)
     LOAD_SYMBOL(cuGraphicsMapResources, tcuGraphicsMapResources, "cuGraphicsMapResources");
     LOAD_SYMBOL(cuGraphicsUnmapResources, tcuGraphicsUnmapResources, "cuGraphicsUnmapResources");
     LOAD_SYMBOL(cuGraphicsSubResourceGetMappedArray, tcuGraphicsSubResourceGetMappedArray, "cuGraphicsSubResourceGetMappedArray");
+    LOAD_SYMBOL(cuGraphicsResourceGetMappedPointer, tcuGraphicsResourceGetMappedPointer, "cuGraphicsResourceGetMappedPointer_v2");
 
     LOAD_SYMBOL_OPT(cuDeviceGetUuid, tcuDeviceGetUuid, "cuDeviceGetUuid");
+    LOAD_SYMBOL_OPT(cuDeviceGetUuid_v2, tcuDeviceGetUuid_v2, "cuDeviceGetUuid_v2");
+    LOAD_SYMBOL_OPT(cuDeviceGetLuid, tcuDeviceGetLuid, "cuDeviceGetLuid");
+    LOAD_SYMBOL_OPT(cuDeviceGetByPCIBusId, tcuDeviceGetByPCIBusId, "cuDeviceGetByPCIBusId");
+    LOAD_SYMBOL_OPT(cuDeviceGetPCIBusId, tcuDeviceGetPCIBusId, "cuDeviceGetPCIBusId");
     LOAD_SYMBOL_OPT(cuImportExternalMemory, tcuImportExternalMemory, "cuImportExternalMemory");
     LOAD_SYMBOL_OPT(cuDestroyExternalMemory, tcuDestroyExternalMemory, "cuDestroyExternalMemory");
     LOAD_SYMBOL_OPT(cuExternalMemoryGetMappedBuffer, tcuExternalMemoryGetMappedBuffer, "cuExternalMemoryGetMappedBuffer");
@@ -348,6 +394,22 @@ static inline int cuda_load_functions(CudaFunctions **functions, void *logctx)
     LOAD_SYMBOL_OPT(cuDestroyExternalSemaphore, tcuDestroyExternalSemaphore, "cuDestroyExternalSemaphore");
     LOAD_SYMBOL_OPT(cuSignalExternalSemaphoresAsync, tcuSignalExternalSemaphoresAsync, "cuSignalExternalSemaphoresAsync");
     LOAD_SYMBOL_OPT(cuWaitExternalSemaphoresAsync, tcuWaitExternalSemaphoresAsync, "cuWaitExternalSemaphoresAsync");
+
+    LOAD_SYMBOL(cuArrayCreate, tcuArrayCreate, "cuArrayCreate_v2");
+    LOAD_SYMBOL(cuArray3DCreate, tcuArray3DCreate, "cuArray3DCreate_v2");
+    LOAD_SYMBOL(cuArrayDestroy, tcuArrayDestroy, "cuArrayDestroy");
+
+    LOAD_SYMBOL_OPT(cuEGLStreamProducerConnect, tcuEGLStreamProducerConnect, "cuEGLStreamProducerConnect");
+    LOAD_SYMBOL_OPT(cuEGLStreamProducerDisconnect, tcuEGLStreamProducerDisconnect, "cuEGLStreamProducerDisconnect");
+    LOAD_SYMBOL_OPT(cuEGLStreamConsumerDisconnect, tcuEGLStreamConsumerDisconnect, "cuEGLStreamConsumerDisconnect");
+    LOAD_SYMBOL_OPT(cuEGLStreamProducerPresentFrame, tcuEGLStreamProducerPresentFrame, "cuEGLStreamProducerPresentFrame");
+    LOAD_SYMBOL_OPT(cuEGLStreamProducerReturnFrame, tcuEGLStreamProducerReturnFrame, "cuEGLStreamProducerReturnFrame");
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+    LOAD_SYMBOL(cuD3D11GetDevice, tcuD3D11GetDevice, "cuD3D11GetDevice");
+    LOAD_SYMBOL(cuD3D11GetDevices, tcuD3D11GetDevices, "cuD3D11GetDevices");
+    LOAD_SYMBOL(cuGraphicsD3D11RegisterResource, tcuGraphicsD3D11RegisterResource, "cuGraphicsD3D11RegisterResource");
+#endif
 
     GENERIC_LOAD_FUNC_FINALE(cuda);
 }
